@@ -275,7 +275,6 @@ NSObject *readString(char *source) {
 }
 
 int main() {
-//    char *source = "  (false 1.25 2 sunil 3 (9 10) false 5.))       ";
     char *source = "  (false 1.25 2 sunil 3 (9 10 false 5.)      ";
 
     NSObject *k = readString(source);
@@ -283,99 +282,3 @@ int main() {
 
     return 0;
 }
-
-
-/*
- TODO
- reader macros
-  Start with list
-
- token
-
- Separate reading as a separate function
-
-
- */
-
-
-//@interface Reader : NSObject
-//+ (NSObject *)getMacro:(char)ch;
-//@end
-
-//@implementation Reader
-//+ (NSObject *)getMacro:(char)ch {
-//    static NSDictionary *macros = nil;
-//    static dispatch_once_t onceToken;
-//
-//    dispatch_once(&onceToken, ^{
-//        macros = @{
-//                @'(': [ListReader alloc]
-//        };
-//    });
-//
-//    return macros[ch];
-//}
-//@end
-
-
-//NSObject *readList(char **ch) {
-//    NSMutableArray *list = [[NSMutableArray alloc] init];
-//    while (true) {
-//        NSObject *form = READ(*ch, READ_EOF, ')', READ_FINISHED);
-//
-//        if (form == READ_FINISHED) return list;
-//
-//        [list addObject:form];
-//    }
-//}
-
-
-
-
-//static NSDictionary *macros = @{
-//        @"(": [Reader alloc]
-//};
-
-
-//NSObject *readMacros(char **ch) {
-//    switch (**ch) {
-//        case '(':
-//            ++*ch;
-//            return [ListReader class];
-//        default:
-//            return [NSValue valueWithPointer:ch];
-//    }
-//
-//}
-
-//
-//NSObject *getMacro(char ch) {
-//    switch (ch) {
-//        case '(':
-//            return [NSValue valueWithPointer:readList];
-//        default:
-//            return nil;
-//    }
-//}
-
-//NSObject *readDelimited(char **ch) {
-//
-//}
-
-
-//@interface PushbackReader : NSObject
-//- (PushbackReader *)initWithPointer:(NSObject *)ptr;
-//- (PushbackReader *)read;
-//- (PushbackReader *)unread;
-//@end
-//
-//
-//@implementation PushbackReader
-//
-//@end
-
-/*
- * TODO
- * Check whether you can read from file
- * Check read number match symbol
- */
