@@ -1,6 +1,6 @@
 #import <Foundation/Foundation.h>
 
-NSArray *_read(NSValue *sourceValPointer, NSObject *eofValue, char returnOn, NSObject *returnOnValue);
+NSArray *_read(NSValue *sourceValPointer, Boolean eofIsError, NSObject *eofValue, char returnOn, NSObject *returnOnValue);
 
 @interface Constants : NSObject
 + (NSObject *)readEOF;
@@ -98,17 +98,16 @@ NSArray *_read(NSValue *sourceValPointer, NSObject *eofValue, char returnOn, NSO
 @end
 
 @interface ListReader : NSObject <IFn>
-- (NSArray *)invoke:(NSValue *)chPointerVal;
+- (NSArray *)invoke:(NSValue *)pendingForms;
 @end
 
 @implementation ListReader
-- (NSArray *)invoke:(NSValue *)chPointerVal {
+- (NSArray *)invoke:(NSValue *)pendingForms {
     NSObject *form;
-    NSValue *pendingForms = chPointerVal;
     NSMutableArray *list = [[NSMutableArray alloc] init];
 
     while (true) {
-        NSArray *result = _read(pendingForms, [Constants readEOF], ')', [Constants readFinished]);
+        NSArray *result = _read(pendingForms, true, [Constants readEOF], ')', [Constants readFinished]);
 
         form = result[0];
         pendingForms = result[1];
@@ -117,6 +116,16 @@ NSArray *_read(NSValue *sourceValPointer, NSObject *eofValue, char returnOn, NSO
 
         [list addObject:form];
     }
+}
+@end
+
+@interface UnmatchedDelimiterReader : NSObject <IFn>
+- (NSArray *)invoke:(NSValue *)pendingForms;
+@end
+
+@implementation UnmatchedDelimiterReader
+- (NSArray *)invoke:(NSValue *)pendingForms {
+    @throw[NSException exceptionWithName:@"Unmatched Delimiter" reason:@"Unmatched Delimiter" userInfo:nil];
 }
 @end
 
@@ -134,7 +143,7 @@ static NSObject <IFn> *macros[256];
 
     dispatch_once(&onceToken, ^{
         macros['('] = [[ListReader alloc] init];
-        macros[')'] = [[NSObject alloc] init];
+        macros[')'] = [[UnmatchedDelimiterReader alloc] init];
     });
 
     return macros[ch];
@@ -169,8 +178,8 @@ NSNumber *matchNumber(NSString *s) {
     return nil;
 }
 
-NSArray *readNumber(NSValue *chValPointer) {
-    char *ch = [chValPointer pointerValue];
+NSArray *readNumber(NSValue *pendingForms) {
+    char *ch = [pendingForms pointerValue];
     NSMutableString *s = [NSMutableString string];
 
     while (true) {
@@ -206,8 +215,8 @@ NSObject *interpretToken(NSString *s) {
     return matchSymbol(s);
 }
 
-NSArray *readToken(NSValue *chValPointer) {
-    char *ch = [chValPointer pointerValue];
+NSArray *readToken(NSValue *pendingForms) {
+    char *ch = [pendingForms pointerValue];
     NSMutableString *s = [NSMutableString string];
 
     while (true) {
@@ -226,14 +235,19 @@ NSArray *readToken(NSValue *chValPointer) {
 }
 
 
-NSArray *_read(NSValue *sourceValPointer, NSObject *eofValue, char returnOn, NSObject *returnOnValue) {
+NSArray *_read(NSValue *sourceValPointer, Boolean eofIsError, NSObject *eofValue, char returnOn, NSObject *returnOnValue) {
     char *source = [sourceValPointer pointerValue];
 
-    if (iseof(*source)) return @[eofValue, [NSValue valueWithPointer:source]];
+    while (isWhitespace(*source)) ++source;
+
+    if (iseof(*source)) {
+        if (eofIsError) @throw[NSException exceptionWithName:@"EOF while reading" reason:@"EOF while reading" userInfo:nil];
+
+        return @[eofValue, [NSValue valueWithPointer:source]];
+    };
 
     if (*source == returnOn) return @[returnOnValue, [NSValue valueWithPointer:++source]];
 
-    while (isWhitespace(*source)) ++source;
 
     if (isdigit(*source)) return readNumber([NSValue valueWithPointer:source]);
 
@@ -248,7 +262,7 @@ NSArray *_read(NSValue *sourceValPointer, NSObject *eofValue, char returnOn, NSO
 }
 
 NSObject *readString(char *source) {
-    NSArray *r = _read([NSValue valueWithPointer:source], nil, nil, nil);
+    NSArray *r = _read([NSValue valueWithPointer:source], true, nil, nil, nil);
     char *remaining = [r[1] pointerValue];
 
     while (isWhitespace(*remaining)) ++remaining;
@@ -261,8 +275,8 @@ NSObject *readString(char *source) {
 }
 
 int main() {
-//    char *source = "  (false 1.25 2 sunil 3 (9 10 false 5.))       ";
-    char *source = "  (false 1.25 2 sunil 3 (9 10 false 5.))       ";
+//    char *source = "  (false 1.25 2 sunil 3 (9 10) false 5.))       ";
+    char *source = "  (false 1.25 2 sunil 3 (9 10 false 5.)      ";
 
     NSObject *k = readString(source);
 
