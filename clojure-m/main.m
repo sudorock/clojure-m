@@ -65,8 +65,6 @@ NSArray *_read(NSValue *sourceValPointer, NSObject *eofValue, char returnOn, NSO
     });
     return symbolPattern;
 }
-
-
 @end
 
 
@@ -91,7 +89,6 @@ NSArray *_read(NSValue *sourceValPointer, NSObject *eofValue, char returnOn, NSO
     self.name = name;
     return self;
 }
-
 @end
 
 @protocol IFn <NSObject>
@@ -176,9 +173,9 @@ NSArray *readNumber(NSValue *chValPointer) {
     char *ch = [chValPointer pointerValue];
     NSMutableString *s = [NSMutableString string];
 
-    [s appendFormat:@"%c", *ch];
-
     while (true) {
+        [s appendFormat:@"%c", *ch];
+
         ch++;
 
         if (iseof(*ch) || isWhitespace(*ch) || [ReaderMacros isMacro:*ch]) {
@@ -189,7 +186,6 @@ NSArray *readNumber(NSValue *chValPointer) {
             return @[number, [NSValue valueWithPointer:ch]];
         }
 
-        [s appendFormat:@"%c", *ch];
     }
 }
 
@@ -214,9 +210,9 @@ NSArray *readToken(NSValue *chValPointer) {
     char *ch = [chValPointer pointerValue];
     NSMutableString *s = [NSMutableString string];
 
-    [s appendFormat:@"%c", *ch];
-
     while (true) {
+        [s appendFormat:@"%c", *ch];
+
         ch++;
 
         if (iseof(*ch) || isWhitespace(*ch) || [ReaderMacros isMacro:*ch]) {
@@ -226,8 +222,6 @@ NSArray *readToken(NSValue *chValPointer) {
             }
             return @[token, [NSValue valueWithPointer:ch]];
         }
-
-        [s appendFormat:@"%c", *ch];
     }
 }
 
@@ -268,7 +262,7 @@ NSObject *readString(char *source) {
 
 int main() {
 //    char *source = "  (false 1.25 2 sunil 3 (9 10 false 5.))       ";
-    char *source = "  (false 1.25 2 sunil 3 (9 10 false 5.)       ";
+    char *source = "  (false 1.25 2 sunil 3 (9 10 false 5.))       ";
 
     NSObject *k = readString(source);
 
