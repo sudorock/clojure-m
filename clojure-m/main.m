@@ -1,6 +1,6 @@
 #import <Foundation/Foundation.h>
 
-NSArray *_read(NSValue *sourceValPointer, Boolean eofIsError, NSObject *eofValue, char returnOn, NSObject *returnOnValue);
+NSArray *_read(NSValue *source, Boolean eofIsError, NSObject *eofValue, char returnOn, NSObject *returnOnValue);
 
 @interface Constants : NSObject
 + (NSObject *)readEOF;
@@ -235,30 +235,29 @@ NSArray *readToken(NSValue *pendingForms) {
 }
 
 
-NSArray *_read(NSValue *sourceValPointer, Boolean eofIsError, NSObject *eofValue, char returnOn, NSObject *returnOnValue) {
-    char *source = [sourceValPointer pointerValue];
+NSArray *_read(NSValue *source, Boolean eofIsError, NSObject *eofValue, char returnOn, NSObject *returnOnValue) {
+    char *ch = [source pointerValue];
 
-    while (isWhitespace(*source)) ++source;
+    while (isWhitespace(*ch)) ++ch;
 
-    if (iseof(*source)) {
+    if (iseof(*ch)) {
         if (eofIsError) @throw[NSException exceptionWithName:@"EOF while reading" reason:@"EOF while reading" userInfo:nil];
 
-        return @[eofValue, [NSValue valueWithPointer:source]];
+        return @[eofValue, [NSValue valueWithPointer:ch]];
     };
 
-    if (*source == returnOn) return @[returnOnValue, [NSValue valueWithPointer:++source]];
+    if (*ch == returnOn) return @[returnOnValue, [NSValue valueWithPointer:++ch]];
 
+    if (isdigit(*ch)) return readNumber([NSValue valueWithPointer:ch]);
 
-    if (isdigit(*source)) return readNumber([NSValue valueWithPointer:source]);
-
-    NSObject <IFn> *readerMacro = [ReaderMacros getMacro:*source];
+    NSObject <IFn> *readerMacro = [ReaderMacros getMacro:*ch];
 
     if (readerMacro != nil) {
-        ++source;
-        return [readerMacro invoke:[NSValue valueWithPointer:source]];
+        ++ch;
+        return [readerMacro invoke:[NSValue valueWithPointer:ch]];
     }
 
-    return readToken([NSValue valueWithPointer:source]);
+    return readToken([NSValue valueWithPointer:ch]);
 }
 
 NSObject *readString(char *source) {
