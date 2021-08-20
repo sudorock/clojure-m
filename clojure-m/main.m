@@ -1,6 +1,6 @@
 #import <Foundation/Foundation.h>
 
-NSArray *_read(NSValue *sourceValPointer, NSObject *eofValue, char returnOn, NSObject *returnOnValue);
+NSArray *_read(NSValue *source, Boolean eofIsError, NSObject *eofValue, char returnOn, NSObject *returnOnValue);
 
 @interface Constants : NSObject
 + (NSObject *)readEOF;
@@ -65,8 +65,6 @@ NSArray *_read(NSValue *sourceValPointer, NSObject *eofValue, char returnOn, NSO
     });
     return symbolPattern;
 }
-
-
 @end
 
 
@@ -91,7 +89,6 @@ NSArray *_read(NSValue *sourceValPointer, NSObject *eofValue, char returnOn, NSO
     self.name = name;
     return self;
 }
-
 @end
 
 @protocol IFn <NSObject>
@@ -101,17 +98,16 @@ NSArray *_read(NSValue *sourceValPointer, NSObject *eofValue, char returnOn, NSO
 @end
 
 @interface ListReader : NSObject <IFn>
-- (NSArray *)invoke:(NSValue *)chPointerVal;
+- (NSArray *)invoke:(NSValue *)pendingForms;
 @end
 
 @implementation ListReader
-- (NSArray *)invoke:(NSValue *)chPointerVal {
+- (NSArray *)invoke:(NSValue *)pendingForms {
     NSObject *form;
-    NSValue *pendingForms = chPointerVal;
     NSMutableArray *list = [[NSMutableArray alloc] init];
 
     while (true) {
-        NSArray *result = _read(pendingForms, [Constants readEOF], ')', [Constants readFinished]);
+        NSArray *result = _read(pendingForms, true, [Constants readEOF], ')', [Constants readFinished]);
 
         form = result[0];
         pendingForms = result[1];
@@ -120,6 +116,16 @@ NSArray *_read(NSValue *sourceValPointer, NSObject *eofValue, char returnOn, NSO
 
         [list addObject:form];
     }
+}
+@end
+
+@interface UnmatchedDelimiterReader : NSObject <IFn>
+- (NSArray *)invoke:(NSValue *)pendingForms;
+@end
+
+@implementation UnmatchedDelimiterReader
+- (NSArray *)invoke:(NSValue *)pendingForms {
+    @throw[NSException exceptionWithName:@"Unmatched Delimiter" reason:@"Unmatched Delimiter" userInfo:nil];
 }
 @end
 
@@ -137,7 +143,7 @@ static NSObject <IFn> *macros[256];
 
     dispatch_once(&onceToken, ^{
         macros['('] = [[ListReader alloc] init];
-        macros[')'] = [[NSObject alloc] init];
+        macros[')'] = [[UnmatchedDelimiterReader alloc] init];
     });
 
     return macros[ch];
@@ -172,13 +178,13 @@ NSNumber *matchNumber(NSString *s) {
     return nil;
 }
 
-NSArray *readNumber(NSValue *chValPointer) {
-    char *ch = [chValPointer pointerValue];
+NSArray *readNumber(NSValue *pendingForms) {
+    char *ch = [pendingForms pointerValue];
     NSMutableString *s = [NSMutableString string];
 
-    [s appendFormat:@"%c", *ch];
-
     while (true) {
+        [s appendFormat:@"%c", *ch];
+
         ch++;
 
         if (iseof(*ch) || isWhitespace(*ch) || [ReaderMacros isMacro:*ch]) {
@@ -189,7 +195,6 @@ NSArray *readNumber(NSValue *chValPointer) {
             return @[number, [NSValue valueWithPointer:ch]];
         }
 
-        [s appendFormat:@"%c", *ch];
     }
 }
 
@@ -210,13 +215,13 @@ NSObject *interpretToken(NSString *s) {
     return matchSymbol(s);
 }
 
-NSArray *readToken(NSValue *chValPointer) {
-    char *ch = [chValPointer pointerValue];
+NSArray *readToken(NSValue *pendingForms) {
+    char *ch = [pendingForms pointerValue];
     NSMutableString *s = [NSMutableString string];
 
-    [s appendFormat:@"%c", *ch];
-
     while (true) {
+        [s appendFormat:@"%c", *ch];
+
         ch++;
 
         if (iseof(*ch) || isWhitespace(*ch) || [ReaderMacros isMacro:*ch]) {
@@ -226,35 +231,37 @@ NSArray *readToken(NSValue *chValPointer) {
             }
             return @[token, [NSValue valueWithPointer:ch]];
         }
-
-        [s appendFormat:@"%c", *ch];
     }
 }
 
 
-NSArray *_read(NSValue *sourceValPointer, NSObject *eofValue, char returnOn, NSObject *returnOnValue) {
-    char *source = [sourceValPointer pointerValue];
+NSArray *_read(NSValue *source, Boolean eofIsError, NSObject *eofValue, char returnOn, NSObject *returnOnValue) {
+    char *ch = [source pointerValue];
 
-    if (iseof(*source)) return @[eofValue, [NSValue valueWithPointer:source]];
+    while (isWhitespace(*ch)) ++ch;
 
-    if (*source == returnOn) return @[returnOnValue, [NSValue valueWithPointer:++source]];
+    if (iseof(*ch)) {
+        if (eofIsError) @throw[NSException exceptionWithName:@"EOF while reading" reason:@"EOF while reading" userInfo:nil];
 
-    while (isWhitespace(*source)) ++source;
+        return @[eofValue, [NSValue valueWithPointer:ch]];
+    };
 
-    if (isdigit(*source)) return readNumber([NSValue valueWithPointer:source]);
+    if (*ch == returnOn) return @[returnOnValue, [NSValue valueWithPointer:++ch]];
 
-    NSObject <IFn> *readerMacro = [ReaderMacros getMacro:*source];
+    if (isdigit(*ch)) return readNumber([NSValue valueWithPointer:ch]);
+
+    NSObject <IFn> *readerMacro = [ReaderMacros getMacro:*ch];
 
     if (readerMacro != nil) {
-        ++source;
-        return [readerMacro invoke:[NSValue valueWithPointer:source]];
+        ++ch;
+        return [readerMacro invoke:[NSValue valueWithPointer:ch]];
     }
 
-    return readToken([NSValue valueWithPointer:source]);
+    return readToken([NSValue valueWithPointer:ch]);
 }
 
 NSObject *readString(char *source) {
-    NSArray *r = _read([NSValue valueWithPointer:source], nil, nil, nil);
+    NSArray *r = _read([NSValue valueWithPointer:source], true, nil, nil, nil);
     char *remaining = [r[1] pointerValue];
 
     while (isWhitespace(*remaining)) ++remaining;
@@ -267,107 +274,10 @@ NSObject *readString(char *source) {
 }
 
 int main() {
-//    char *source = "  (false 1.25 2 sunil 3 (9 10 false 5.))       ";
-    char *source = "  (false 1.25 2 sunil 3 (9 10 false 5.)       ";
+    char *source = "  (false 1.25 2 sunil 3 (9 10 false 5.)      ";
 
     NSObject *k = readString(source);
 
 
     return 0;
 }
-
-
-/*
- TODO
- reader macros
-  Start with list
-
- token
-
- Separate reading as a separate function
-
-
- */
-
-
-//@interface Reader : NSObject
-//+ (NSObject *)getMacro:(char)ch;
-//@end
-
-//@implementation Reader
-//+ (NSObject *)getMacro:(char)ch {
-//    static NSDictionary *macros = nil;
-//    static dispatch_once_t onceToken;
-//
-//    dispatch_once(&onceToken, ^{
-//        macros = @{
-//                @'(': [ListReader alloc]
-//        };
-//    });
-//
-//    return macros[ch];
-//}
-//@end
-
-
-//NSObject *readList(char **ch) {
-//    NSMutableArray *list = [[NSMutableArray alloc] init];
-//    while (true) {
-//        NSObject *form = READ(*ch, READ_EOF, ')', READ_FINISHED);
-//
-//        if (form == READ_FINISHED) return list;
-//
-//        [list addObject:form];
-//    }
-//}
-
-
-
-
-//static NSDictionary *macros = @{
-//        @"(": [Reader alloc]
-//};
-
-
-//NSObject *readMacros(char **ch) {
-//    switch (**ch) {
-//        case '(':
-//            ++*ch;
-//            return [ListReader class];
-//        default:
-//            return [NSValue valueWithPointer:ch];
-//    }
-//
-//}
-
-//
-//NSObject *getMacro(char ch) {
-//    switch (ch) {
-//        case '(':
-//            return [NSValue valueWithPointer:readList];
-//        default:
-//            return nil;
-//    }
-//}
-
-//NSObject *readDelimited(char **ch) {
-//
-//}
-
-
-//@interface PushbackReader : NSObject
-//- (PushbackReader *)initWithPointer:(NSObject *)ptr;
-//- (PushbackReader *)read;
-//- (PushbackReader *)unread;
-//@end
-//
-//
-//@implementation PushbackReader
-//
-//@end
-
-/*
- * TODO
- * Check whether you can read from file
- * Check read number match symbol
- */
