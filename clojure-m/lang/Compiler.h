@@ -20,6 +20,16 @@
 - (id)eval;
 @end
 
+@interface BooleanExpr : NSObject <LiteralExpr>
++ (id)boolean:(BOOL)val;
+
+- (id)initWithBoolean:(BOOL)val;
+
+- (id)val;
+
+- (id)eval;
+@end
+
 
 @interface Compiler : NSObject
 + (id <Expr>)analyze:(id)form;

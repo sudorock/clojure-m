@@ -6,39 +6,7 @@
 #import "Symbol.h"
 #import "LispReader.h"
 #import "List.h"
-
-
-NSArray *_read(NSValue *source, Boolean eofIsError, NSObject *eofValue, char returnOn, NSObject *returnOnValue);
-
-
-@interface Constants : NSObject
-+ (NSObject *)readEOF;
-
-+ (NSObject *)readFinished;
-
-+ (NSRegularExpression *)intPattern;
-
-+ (NSRegularExpression *)floatPattern;
-
-+ (NSRegularExpression *)symbolPattern;
-@end
-
-
-@interface ListReader : NSObject <IFn>
-- (NSArray *)invoke:(NSValue *)pendingForms;
-@end
-
-
-@interface UnmatchedDelimiterReader : NSObject <IFn>
-- (NSArray *)invoke:(NSValue *)pendingForms;
-@end
-
-
-@interface ReaderMacros : NSObject
-+ (NSObject <IFn> *)getMacro:(char)ch;
-
-+ (Boolean)isMacro:(char)ch;
-@end
+#import "RT.h"
 
 
 @implementation Constants
@@ -213,8 +181,8 @@ NSObject *matchSymbol(NSString *s) {
 
 NSObject *interpretToken(NSString *s) {
     if ([s isEqualToString:@"nil"]) return [NSNull null];
-    if ([s isEqualToString:@"true"]) return @(true);
-    if ([s isEqualToString:@"false"]) return @(false);
+    if ([s isEqualToString:@"true"]) return @([RT T]);
+    if ([s isEqualToString:@"false"]) return @([RT F]);
 
     return matchSymbol(s);
 }
