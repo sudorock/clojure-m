@@ -4,7 +4,25 @@
 
 #import <Foundation/Foundation.h>
 
+@protocol Expr
+- (id)eval;
+@end
+
+
+@protocol LiteralExpr <Expr>
+- (id)val;
+@end
+
+
+@interface NilExpr : NSObject <LiteralExpr>
+- (id)val;
+
+- (id)eval;
+@end
+
 
 @interface Compiler : NSObject
-+ (id)eval;
++ (id <Expr>)analyze:(id)form;
+
++ (id)eval:(id)form;
 @end
