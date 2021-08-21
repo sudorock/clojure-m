@@ -4,6 +4,7 @@
 
 #import <Foundation/Foundation.h>
 
+
 @interface Symbol : NSObject
 @property NSString *name;
 

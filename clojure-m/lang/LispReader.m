@@ -5,6 +5,7 @@
 #import "IFn.h"
 #import "Symbol.h"
 #import "LispReader.h"
+#import "List.h"
 
 
 NSArray *_read(NSValue *source, Boolean eofIsError, NSObject *eofValue, char returnOn, NSObject *returnOnValue);
@@ -98,21 +99,30 @@ NSArray *_read(NSValue *source, Boolean eofIsError, NSObject *eofValue, char ret
 @end
 
 
-@implementation ListReader
-- (NSArray *)invoke:(NSValue *)pendingForms {
+NSArray *readDelimitedList(char delim, NSValue *pendingForms) {
     NSObject *form;
     NSMutableArray *list = [[NSMutableArray alloc] init];
 
     while (true) {
-        NSArray *result = _read(pendingForms, true, [Constants readEOF], ')', [Constants readFinished]);
+        NSArray *res = _read(pendingForms, true, [Constants readEOF], delim, [Constants readFinished]);
 
-        form = result[0];
-        pendingForms = result[1];
+        form = res[0];
+        pendingForms = res[1];
 
         if (form == [Constants readFinished]) return @[list, pendingForms];
 
         [list addObject:form];
     }
+}
+
+
+@implementation ListReader
+- (NSArray *)invoke:(NSValue *)pendingForms {
+    NSArray *res = readDelimitedList(')', pendingForms);
+
+    List *l = [List arrayWithArray:res[0]];
+
+    return @[l, res[1]];
 }
 @end
 

@@ -4,6 +4,7 @@
 
 #import <Foundation/Foundation.h>
 
+
 @protocol IFn <NSObject>
 - (id)invoke:(id)arg1;
 
