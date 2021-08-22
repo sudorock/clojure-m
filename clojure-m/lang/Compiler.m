@@ -44,12 +44,42 @@
 @end
 
 
+@implementation NumberExpr {
+    NSNumber *_val;
+}
+
++ (id)number:(NSNumber *)val {
+    return [[self alloc] initWithNumber:val];
+}
+
+- (id)initWithNumber:(NSNumber *)val {
+    self = [super init];
+    _val = val;
+    return self;
+}
+
+- (id)val {
+    return _val;
+}
+
+- (id)eval {
+    return [self val];
+}
+
+@end
+
+
 @implementation Compiler
 
 + (id <Expr>)analyze:(id)form {
     if (form == [NSNull null]) return [[NilExpr alloc] init];
+
     if ([form isEqual:@([RT T])]) return [BooleanExpr boolean:true];
+
     if ([form isEqual:@([RT F])]) return [BooleanExpr boolean:false];
+
+    if ([form isKindOfClass:[NSNumber class]]) return [NumberExpr number:form];
+
     return nil;
 }
 

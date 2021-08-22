@@ -30,6 +30,17 @@
 - (id)eval;
 @end
 
+@interface NumberExpr : NSObject
++ (id)number:(NSNumber *)val;
+
+- (id)initWithNumber:(NSNumber *)val;
+
+- (id)val;
+
+- (id)eval;
+
+@end
+
 
 @interface Compiler : NSObject
 + (id <Expr>)analyze:(id)form;

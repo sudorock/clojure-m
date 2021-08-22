@@ -2,7 +2,6 @@
 // Created by Sunil KS on 20/08/21.
 //
 
-#import "IFn.h"
 #import "Symbol.h"
 #import "LispReader.h"
 #import "List.h"
@@ -158,7 +157,7 @@ NSArray *readNumber(NSValue *pendingForms) {
         ch++;
 
         if (iseof(*ch) || isWhitespace(*ch) || [ReaderMacros isMacro:*ch]) {
-            NSObject *number = matchNumber(s);
+            NSNumber *number = matchNumber(s);
             if (number == nil) {
                 @throw[NSException exceptionWithName:@"InvalidNumber" reason:@"Invalid Number" userInfo:nil];
             }
