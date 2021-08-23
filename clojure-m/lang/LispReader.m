@@ -104,6 +104,7 @@ NSArray *readDelimitedList(char delim, NSValue *pendingForms) {
 @implementation ReaderMacros : NSObject
 static NSObject <IFn> *macros[256];
 
+
 + (NSObject <IFn> *)getMacro:(char)ch {
     static dispatch_once_t onceToken;
 
@@ -114,6 +115,7 @@ static NSObject <IFn> *macros[256];
 
     return macros[ch];
 }
+
 
 + (Boolean)isMacro:(char)ch {
     return [self getMacro:ch] != nil;

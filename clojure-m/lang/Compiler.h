@@ -4,6 +4,10 @@
 
 #import <Foundation/Foundation.h>
 
+
+@class Symbol;
+
+
 @protocol Expr
 - (id)eval;
 @end
@@ -20,6 +24,7 @@
 - (id)eval;
 @end
 
+
 @interface BooleanExpr : NSObject <LiteralExpr>
 + (id)boolean:(BOOL)val;
 
@@ -30,7 +35,8 @@
 - (id)eval;
 @end
 
-@interface NumberExpr : NSObject
+
+@interface NumberExpr : NSObject <Expr>
 + (id)number:(NSNumber *)val;
 
 - (id)initWithNumber:(NSNumber *)val;
@@ -42,8 +48,23 @@
 @end
 
 
+@interface VarExpr : NSObject <Expr>
+
+- (id)val;
+
+- (id)eval;
+
+@end
+
+
 @interface Compiler : NSObject
 + (id <Expr>)analyze:(id)form;
+
++ (id <Expr>)resolve:(Symbol *)sym;
+
++ (id <Expr>)analyzeSeq:(id)form;
+
++ (id <Expr>)analyzeSymbol:(id)form;
 
 + (id)eval:(id)form;
 @end

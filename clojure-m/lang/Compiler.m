@@ -4,6 +4,7 @@
 
 #import "Compiler.h"
 #import "RT.h"
+#import "Symbol.h"
 
 
 //TODO Check if you need to instantiate [NSNull null] only once
@@ -11,6 +12,7 @@
 - (id)val {
     return [NSNull null];
 }
+
 
 - (id)eval {
     return [self val];
@@ -27,15 +29,18 @@
     return [[self alloc] initWithBoolean:val];
 }
 
+
 - (id)initWithBoolean:(BOOL)val {
     self = [super init];
     _val = val;
     return self;
 }
 
+
 - (id)val {
     return @(_val ? [RT T] : [RT F]);
 }
+
 
 - (id)eval {
     return [self val];
@@ -52,15 +57,46 @@
     return [[self alloc] initWithNumber:val];
 }
 
+
 - (id)initWithNumber:(NSNumber *)val {
     self = [super init];
     _val = val;
     return self;
 }
 
+
 - (id)val {
     return _val;
 }
+
+
+- (id)eval {
+    return [self val];
+}
+
+@end
+
+
+@implementation VarExpr {
+    NSObject *_val;
+}
+
++ (id)var:(NSObject *)val {
+    return [[self alloc] initWithVar:val];
+}
+
+
+- (id)initWithVar:(NSObject *)val {
+    self = [super init];
+    _val = val;
+    return self;
+}
+
+
+- (id)val {
+    return _val;
+}
+
 
 - (id)eval {
     return [self val];
@@ -80,8 +116,26 @@
 
     if ([form isKindOfClass:[NSNumber class]]) return [NumberExpr number:form];
 
+    if ([form isKindOfClass:[Symbol class]]) return [self analyzeSymbol:form];
+
     return nil;
 }
+
+
++ (id <Expr>)resolve:(Symbol *)form {
+    return [VarExpr var:[[NSObject alloc] init]];
+}
+
+
++ (id <Expr>)analyzeSeq:(id)form {
+    return nil;
+}
+
+
++ (id <Expr>)analyzeSymbol:(id)form {
+    return [self resolve:form];
+}
+
 
 + (id)eval:(id)form {
     id <Expr> expr = [self analyze:form];
