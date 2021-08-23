@@ -5,6 +5,8 @@
 #import "Compiler.h"
 #import "RT.h"
 #import "Symbol.h"
+#import "PersistentList.h"
+#import "ISeq.h"
 
 
 //TODO Check if you need to instantiate [NSNull null] only once
@@ -25,14 +27,14 @@
     BOOL _val;
 }
 
-+ (id)boolean:(BOOL)val {
-    return [[self alloc] initWithBoolean:val];
++ (id)boolean:(BOOL)boolean {
+    return [[self alloc] initWithBoolean:boolean];
 }
 
 
-- (id)initWithBoolean:(BOOL)val {
+- (id)initWithBoolean:(BOOL)boolean {
     self = [super init];
-    _val = val;
+    _val = boolean;
     return self;
 }
 
@@ -53,14 +55,14 @@
     NSNumber *_val;
 }
 
-+ (id)number:(NSNumber *)val {
-    return [[self alloc] initWithNumber:val];
++ (id)number:(NSNumber *)number {
+    return [[self alloc] initWithNumber:number];
 }
 
 
-- (id)initWithNumber:(NSNumber *)val {
+- (id)initWithNumber:(NSNumber *)number {
     self = [super init];
-    _val = val;
+    _val = number;
     return self;
 }
 
@@ -81,14 +83,14 @@
     NSObject *_val;
 }
 
-+ (id)var:(NSObject *)val {
-    return [[self alloc] initWithVar:val];
++ (id)var:(NSObject *)var {
+    return [[self alloc] initWithVar:var];
 }
 
 
-- (id)initWithVar:(NSObject *)val {
+- (id)initWithVar:(NSObject *)var {
     self = [super init];
-    _val = val;
+    _val = var;
     return self;
 }
 
@@ -100,6 +102,36 @@
 
 - (id)eval {
     return [self val];
+}
+
+@end
+
+
+@implementation InvokeExpr {
+    NSObject *_val;
+}
+
++ (id)fexpr:(NSObject *)fexpr args:(NSObject *)args {
+    return [[self alloc] initWithFexpr:fexpr args:args];
+}
+
+
+- (id)initWithFexpr:(NSObject *)fexpr args:(NSObject *)args {
+    self = [super init];
+    _val = fexpr;
+    return self;
+}
+
+
++ (id)parse:(id <ISeq>)form {
+    id <Expr> fexpr = [Compiler analyze:[form first]];
+
+    return nil;
+}
+
+
+- (id)eval {
+    return nil;
 }
 
 @end
@@ -118,6 +150,8 @@
 
     if ([form isKindOfClass:[Symbol class]]) return [self analyzeSymbol:form];
 
+    if ([form isKindOfClass:[PersistentList class]]) return [self analyzeSeq:form];
+
     return nil;
 }
 
@@ -128,7 +162,7 @@
 
 
 + (id <Expr>)analyzeSeq:(id)form {
-    return nil;
+    return [InvokeExpr parse:form];
 }
 
 

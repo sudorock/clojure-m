@@ -6,6 +6,7 @@
 
 
 @class Symbol;
+@protocol ISeq;
 
 
 @protocol Expr
@@ -26,9 +27,9 @@
 
 
 @interface BooleanExpr : NSObject <LiteralExpr>
-+ (id)boolean:(BOOL)val;
++ (id)boolean:(BOOL)boolean;
 
-- (id)initWithBoolean:(BOOL)val;
+- (id)initWithBoolean:(BOOL)boolean;
 
 - (id)val;
 
@@ -37,9 +38,9 @@
 
 
 @interface NumberExpr : NSObject <Expr>
-+ (id)number:(NSNumber *)val;
++ (id)number:(NSNumber *)number;
 
-- (id)initWithNumber:(NSNumber *)val;
+- (id)initWithNumber:(NSNumber *)number;
 
 - (id)val;
 
@@ -51,6 +52,15 @@
 @interface VarExpr : NSObject <Expr>
 
 - (id)val;
+
+- (id)eval;
+
+@end
+
+
+@interface InvokeExpr : NSObject <Expr>
+
++ (id)parse:(id <ISeq>)form;
 
 - (id)eval;
 

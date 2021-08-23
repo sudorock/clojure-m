@@ -3,9 +3,10 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "ISeq.h"
 
-
-@interface List : NSObject
+//NOT PERSISTENT YET, PLACEHOLDERISH
+@interface PersistentList : NSObject <ISeq>
 
 + (id)arrayWithArray:(NSArray *)a;
 

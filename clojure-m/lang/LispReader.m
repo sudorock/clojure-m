@@ -4,7 +4,7 @@
 
 #import "Symbol.h"
 #import "LispReader.h"
-#import "List.h"
+#import "PersistentList.h"
 #import "RT.h"
 
 
@@ -87,7 +87,7 @@ NSArray *readDelimitedList(char delim, NSValue *pendingForms) {
 - (NSArray *)invoke:(NSValue *)pendingForms {
     NSArray *res = readDelimitedList(')', pendingForms);
 
-    List *l = [List arrayWithArray:res[0]];
+    PersistentList *l = [PersistentList arrayWithArray:res[0]];
 
     return @[l, res[1]];
 }

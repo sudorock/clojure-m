@@ -5,8 +5,7 @@
 #import <Foundation/Foundation.h>
 
 
-@protocol IFn <NSObject>
+@protocol IFn
 - (id)invoke:(id)arg1;
 
-+ (id)alloc;
 @end
