@@ -7,7 +7,9 @@
 
 
 @interface PersistentVector : NSObject <IPersistentVector>
-+ (instancetype):vector;
+
++ (PersistentVector *)vector;
 
 - (id)cons:(id)o;
+
 @end

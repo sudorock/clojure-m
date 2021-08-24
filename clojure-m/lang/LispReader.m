@@ -182,8 +182,8 @@ NSObject *matchSymbol(NSString *s) {
 
 NSObject *interpretToken(NSString *s) {
     if ([s isEqualToString:@"nil"]) return [NSNull null];
-    if ([s isEqualToString:@"true"]) return @([RT T]);
-    if ([s isEqualToString:@"false"]) return @([RT F]);
+    if ([s isEqualToString:@"true"]) return [Bool T];
+    if ([s isEqualToString:@"false"]) return [Bool F];
 
     return matchSymbol(s);
 }

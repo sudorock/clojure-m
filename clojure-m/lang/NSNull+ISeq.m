@@ -16,4 +16,34 @@
 }
 
 
+- (id)more {
+    return nil;
+}
+
+
+- (id)cons:(id)o {
+    return nil;
+}
+
+
+- (NSInteger *)count {
+    return 0;
+}
+
+
+- (instancetype)empty {
+    return self;
+}
+
+
+- (BOOL)equiv:(id)o {
+    return NO;
+}
+
+
+- (id)seq {
+    return self;
+}
+
+
 @end

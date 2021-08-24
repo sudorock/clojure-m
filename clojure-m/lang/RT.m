@@ -5,13 +5,33 @@
 #import "RT.h"
 
 
-@implementation RT
-+ (BOOL)T {
-    return true;
-}
+@implementation Bool
++ (instancetype)T {
+    static Bool *T;
+    static dispatch_once_t onceToken;
 
-+ (BOOL)F {
-    return false;
-}
+    dispatch_once(&onceToken, ^{
+        T = [[self alloc] init];
+    });
+
+    return T;
+};
+
+
++ (instancetype)F {
+    static Bool *F;
+    static dispatch_once_t onceToken;
+
+    dispatch_once(&onceToken, ^{
+        F = [[self alloc] init];
+    });
+
+    return F;
+};
+@end
+
+
+@implementation RT
+
 
 @end

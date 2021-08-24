@@ -5,8 +5,13 @@
 #import <Foundation/Foundation.h>
 
 
-@interface RT : NSObject
-+ (BOOL)T;
+@interface Bool : NSObject
++ (instancetype)T;
 
-+ (BOOL)F;
++ (instancetype)F;
+@end
+
+
+@interface RT : NSObject
+
 @end

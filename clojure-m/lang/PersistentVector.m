@@ -6,16 +6,17 @@
 
 
 @implementation PersistentVector {
-    NSMutableArray *_val;
+    NSArray *_val;
 }
 
-+ (instancetype):vector {
-    return [[self alloc] initWithArray:[NSMutableArray array]];
+
++ (PersistentVector *)vector {
+    return [[self alloc] initWithArray:[NSArray array]];
 }
 
 
 - (id)cons:(id)o {
-    return nil;
+    return [PersistentVector vectorWithArray:[_val arrayByAddingObject:o]];
 }
 
 
@@ -28,7 +29,9 @@
     self = [super init];
     if (self == nil) return nil;
 
-    _val = [NSMutableArray arrayWithArray:a];
+    _val = [NSArray arrayWithArray:a];
     return self;
 }
+
+
 @end

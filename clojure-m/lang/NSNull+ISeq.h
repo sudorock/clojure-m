@@ -3,9 +3,11 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "ISeq.h"
 
 
-@interface NSNull (ISeq)
--(instancetype)first;
--(instancetype)next;
+@interface NSNull (ISeq) <ISeq>
+- (instancetype)first;
+
+- (instancetype)next;
 @end

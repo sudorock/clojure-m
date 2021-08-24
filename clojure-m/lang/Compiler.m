@@ -7,6 +7,7 @@
 #import "Symbol.h"
 #import "PersistentList.h"
 #import "ISeq.h"
+#import "PersistentVector.h"
 
 
 //TODO Check if you need to instantiate [NSNull null] only once
@@ -40,7 +41,7 @@
 
 
 - (id)val {
-    return @(_val ? [RT T] : [RT F]);
+    return _val ? [Bool T] : [Bool F];
 }
 
 
@@ -125,7 +126,15 @@
 
 + (id)parse:(id <ISeq>)form {
     id <Expr> fexpr = [Compiler analyze:[form first]];
+    PersistentVector *args = [PersistentVector vector];
+    id <ISeq> s = [form next];
 
+    while (s != (id <ISeq>) [NSNull null]) {
+        args = [args cons:[Compiler analyze:[s first]]];
+        s = [s next];
+    }
+
+    id z = args;
     return nil;
 }
 
@@ -142,9 +151,10 @@
 + (id <Expr>)analyze:(id)form {
     if (form == [NSNull null]) return [[NilExpr alloc] init];
 
-    if ([form isEqual:@([RT T])]) return [BooleanExpr boolean:true];
+//    if ([form isKindOfClass: [BOOL class]])
+    if ([form isEqual:[Bool T]]) return [BooleanExpr boolean:true];
 
-    if ([form isEqual:@([RT F])]) return [BooleanExpr boolean:false];
+    if ([form isEqual:[Bool T]]) return [BooleanExpr boolean:false];
 
     if ([form isKindOfClass:[NSNumber class]]) return [NumberExpr number:form];
 
