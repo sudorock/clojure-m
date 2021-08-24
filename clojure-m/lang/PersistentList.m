@@ -6,7 +6,7 @@
 
 
 @implementation PersistentList {
-    NSMutableArray *_val;
+    NSArray *_val;
 }
 
 
@@ -19,18 +19,27 @@
     self = [super init];
     if (self == nil) return nil;
 
-    _val = [NSMutableArray arrayWithArray:a];
+    _val = [NSArray arrayWithArray:a];
+
     return self;
 }
 
 
 - (id)first {
+    id first = [_val firstObject];
+
+    if (first == nil) return [NSNull null];
+
     return [_val firstObject];
 }
 
 
 - (id <ISeq>)next {
-    return nil;
+    NSUInteger c = [_val count] - 1;
+
+    if (c == 0) return (id <ISeq>) [NSNull null];
+
+    return [PersistentList arrayWithArray:[_val subarrayWithRange:NSMakeRange(1, c)]];
 }
 
 

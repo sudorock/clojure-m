@@ -9,9 +9,9 @@
 @protocol ISeq <IPersistentCollection>
 - (id)first;
 
-- (id <ISeq>)next;
+- (id)next;
 
-- (id <ISeq>)more;
+- (id)more;
 
-- (id <ISeq>)cons:(id)o;
+- (id)cons:(id)o;
 @end
