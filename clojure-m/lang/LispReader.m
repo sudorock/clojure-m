@@ -2,42 +2,10 @@
 // Created by Sunil KS on 20/08/21.
 //
 
-#import "IFn.h"
 #import "Symbol.h"
 #import "LispReader.h"
-
-
-NSArray *_read(NSValue *source, Boolean eofIsError, NSObject *eofValue, char returnOn, NSObject *returnOnValue);
-
-
-@interface Constants : NSObject
-+ (NSObject *)readEOF;
-
-+ (NSObject *)readFinished;
-
-+ (NSRegularExpression *)intPattern;
-
-+ (NSRegularExpression *)floatPattern;
-
-+ (NSRegularExpression *)symbolPattern;
-@end
-
-
-@interface ListReader : NSObject <IFn>
-- (NSArray *)invoke:(NSValue *)pendingForms;
-@end
-
-
-@interface UnmatchedDelimiterReader : NSObject <IFn>
-- (NSArray *)invoke:(NSValue *)pendingForms;
-@end
-
-
-@interface ReaderMacros : NSObject
-+ (NSObject <IFn> *)getMacro:(char)ch;
-
-+ (Boolean)isMacro:(char)ch;
-@end
+#import "PersistentList.h"
+#import "RT.h"
 
 
 @implementation Constants
@@ -98,21 +66,30 @@ NSArray *_read(NSValue *source, Boolean eofIsError, NSObject *eofValue, char ret
 @end
 
 
-@implementation ListReader
-- (NSArray *)invoke:(NSValue *)pendingForms {
+NSArray *readDelimitedList(char delim, NSValue *pendingForms) {
     NSObject *form;
     NSMutableArray *list = [[NSMutableArray alloc] init];
 
     while (true) {
-        NSArray *result = _read(pendingForms, true, [Constants readEOF], ')', [Constants readFinished]);
+        NSArray *res = _read(pendingForms, true, [Constants readEOF], delim, [Constants readFinished]);
 
-        form = result[0];
-        pendingForms = result[1];
+        form = res[0];
+        pendingForms = res[1];
 
         if (form == [Constants readFinished]) return @[list, pendingForms];
 
         [list addObject:form];
     }
+}
+
+
+@implementation ListReader
+- (NSArray *)invoke:(NSValue *)pendingForms {
+    NSArray *res = readDelimitedList(')', pendingForms);
+
+    PersistentList *l = [PersistentList arrayWithArray:res[0]];
+
+    return @[l, res[1]];
 }
 @end
 
@@ -127,6 +104,7 @@ NSArray *_read(NSValue *source, Boolean eofIsError, NSObject *eofValue, char ret
 @implementation ReaderMacros : NSObject
 static NSObject <IFn> *macros[256];
 
+
 + (NSObject <IFn> *)getMacro:(char)ch {
     static dispatch_once_t onceToken;
 
@@ -137,6 +115,7 @@ static NSObject <IFn> *macros[256];
 
     return macros[ch];
 }
+
 
 + (Boolean)isMacro:(char)ch {
     return [self getMacro:ch] != nil;
@@ -180,7 +159,7 @@ NSArray *readNumber(NSValue *pendingForms) {
         ch++;
 
         if (iseof(*ch) || isWhitespace(*ch) || [ReaderMacros isMacro:*ch]) {
-            NSObject *number = matchNumber(s);
+            NSNumber *number = matchNumber(s);
             if (number == nil) {
                 @throw[NSException exceptionWithName:@"InvalidNumber" reason:@"Invalid Number" userInfo:nil];
             }
@@ -203,8 +182,8 @@ NSObject *matchSymbol(NSString *s) {
 
 NSObject *interpretToken(NSString *s) {
     if ([s isEqualToString:@"nil"]) return [NSNull null];
-    if ([s isEqualToString:@"true"]) return @(true);
-    if ([s isEqualToString:@"false"]) return @(false);
+    if ([s isEqualToString:@"true"]) return [Bool T];
+    if ([s isEqualToString:@"false"]) return [Bool F];
 
     return matchSymbol(s);
 }
