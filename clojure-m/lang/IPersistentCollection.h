@@ -7,7 +7,7 @@
 
 
 @protocol IPersistentCollection <Seqable>
-- (NSInteger *)count;
+- (NSUInteger)count;
 
 - (id <IPersistentCollection>)cons:(id)o;
 

@@ -12,4 +12,6 @@
 
 - (id)cons:(id)o;
 
+- (NSUInteger)count;
+
 @end

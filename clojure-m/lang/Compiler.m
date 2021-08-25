@@ -8,6 +8,8 @@
 #import "PersistentList.h"
 #import "ISeq.h"
 #import "PersistentVector.h"
+#import "Var.h"
+#import "IFn.h"
 
 
 //TODO Check if you need to instantiate [NSNull null] only once
@@ -80,47 +82,35 @@
 @end
 
 
-@implementation VarExpr {
-    NSObject *_val;
-}
+@implementation VarExpr
 
-+ (id)var:(NSObject *)var {
++ (id)var:(Var *)var {
     return [[self alloc] initWithVar:var];
 }
 
 
-- (id)initWithVar:(NSObject *)var {
+- (id)initWithVar:(Var *)var {
     self = [super init];
-    _val = var;
+    self.var = var;
     return self;
 }
 
 
-- (id)val {
-    return _val;
-}
-
-
 - (id)eval {
-    return [self val];
+    return nil;
 }
+
 
 @end
 
 
 @implementation InvokeExpr {
-    NSObject *_val;
+    id <Expr> _fexpr;
+    PersistentVector *_args;
 }
 
-+ (id)fexpr:(NSObject *)fexpr args:(NSObject *)args {
++ (id)fexpr:(id <Expr>)fexpr args:(PersistentVector *)args {
     return [[self alloc] initWithFexpr:fexpr args:args];
-}
-
-
-- (id)initWithFexpr:(NSObject *)fexpr args:(NSObject *)args {
-    self = [super init];
-    _val = fexpr;
-    return self;
 }
 
 
@@ -134,13 +124,28 @@
         s = [s next];
     }
 
-    id z = args;
-    return nil;
+    return [self fexpr:fexpr args:args];
+}
+
+
+- (id)initWithFexpr:(id <Expr>)fexpr args:(PersistentVector *)args {
+    self = [super init];
+    _fexpr = fexpr;
+    _args = args;
+
+    return self;
 }
 
 
 - (id)eval {
-    return nil;
+    id <IFn> fn = [_fexpr eval];
+    PersistentVector *argvs = [PersistentVector vector];
+
+    for (NSUInteger i = 0; i < [_args count]; i++) {
+        [argvs cons:[[_args nth:i] eval]];
+    }
+
+    return [fn applyTo:[RT seq:argvs]];
 }
 
 @end
@@ -151,7 +156,6 @@
 + (id <Expr>)analyze:(id)form {
     if (form == [NSNull null]) return [[NilExpr alloc] init];
 
-//    if ([form isKindOfClass: [BOOL class]])
     if ([form isEqual:[Bool T]]) return [BooleanExpr boolean:true];
 
     if ([form isEqual:[Bool T]]) return [BooleanExpr boolean:false];

@@ -3,8 +3,9 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "Indexed.h"
 
 
-@protocol IPersistentVector
+@protocol IPersistentVector <Indexed>
 - (id)cons:(id)o;
 @end

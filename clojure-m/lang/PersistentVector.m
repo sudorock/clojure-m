@@ -34,4 +34,14 @@
 }
 
 
+- (NSUInteger)count {
+    return [_val count];
+}
+
+
+- (id)nth:(NSUInteger)i {
+    return _val[i];
+}
+
+
 @end

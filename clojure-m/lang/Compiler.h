@@ -7,6 +7,7 @@
 
 @class Symbol;
 @protocol ISeq;
+@class Var;
 
 
 @protocol Expr
@@ -50,10 +51,10 @@
 
 
 @interface VarExpr : NSObject <Expr>
-
-- (id)val;
+@property Var *var;
 
 - (id)eval;
+
 
 @end
 

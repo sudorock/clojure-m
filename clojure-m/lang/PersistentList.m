@@ -53,7 +53,7 @@
 }
 
 
-- (NSInteger *)count {
+- (NSUInteger)count {
     return 0;
 }
 

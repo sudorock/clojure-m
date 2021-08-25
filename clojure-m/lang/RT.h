@@ -5,6 +5,9 @@
 #import <Foundation/Foundation.h>
 
 
+@protocol ISeq;
+
+
 @interface Bool : NSObject
 + (instancetype)T;
 
@@ -14,4 +17,5 @@
 
 @interface RT : NSObject
 
++(id <ISeq>)seq:(id)coll;
 @end

@@ -8,4 +8,6 @@
 @protocol IFn
 - (id)invoke:(id)arg1;
 
+- (id)applyTo:(id <ISeq>)arglist;
+
 @end

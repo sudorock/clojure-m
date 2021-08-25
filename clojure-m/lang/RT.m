@@ -3,6 +3,7 @@
 //
 
 #import "RT.h"
+#import "ISeq.h"
 
 
 @implementation Bool
@@ -32,6 +33,9 @@
 
 
 @implementation RT
++ (id <ISeq>)seq:(id)coll {
+    return nil;
+}
 
 
 @end
