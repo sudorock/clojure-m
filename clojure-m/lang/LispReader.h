@@ -9,19 +9,6 @@
 NSArray *_read(NSValue *source, Boolean eofIsError, NSObject *eofValue, char returnOn, NSObject *returnOnValue);
 
 
-@interface Constants : NSObject
-+ (NSObject *)readEOF;
-
-+ (NSObject *)readFinished;
-
-+ (NSRegularExpression *)intPattern;
-
-+ (NSRegularExpression *)floatPattern;
-
-+ (NSRegularExpression *)symbolPattern;
-@end
-
-
 @interface ListReader : NSObject <IFn>
 - (NSArray *)invoke:(NSValue *)pendingForms;
 @end
@@ -32,13 +19,20 @@ NSArray *_read(NSValue *source, Boolean eofIsError, NSObject *eofValue, char ret
 @end
 
 
-@interface ReaderMacros : NSObject
+@interface LispReader : NSObject
++ (NSObject *)READ_EOF;
+
++ (NSObject *)READ_FINISHED;
+
++ (NSRegularExpression *)INT_PATTERN;
+
++ (NSRegularExpression *)FLOAT_PATTERN;
+
++ (NSRegularExpression *)SYMBOL_PATTERN;
+
 + (NSObject <IFn> *)getMacro:(char)ch;
 
-+ (Boolean)isMacro:(char)ch;
-@end
++ (BOOL)isMacro:(char)ch;
 
-
-@interface LispReader : NSObject
 + (NSObject *)read:(char *)source;
 @end
