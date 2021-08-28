@@ -34,6 +34,28 @@
 
 @implementation RT
 + (id <ISeq>)seq:(id)coll {
+    return coll;
+}
+
+
++ (id)second:(id)x {
+    return [[x next] first];
+}
+
+
++ (id)third:(id)x {
+    return [[[x next] next] first];
+}
+
+
++ (id)first:(id)x {
+    if ([x respondsToSelector:@selector(first)]) return [x first];
+    return nil;
+}
+
+
++ (id)next:(id)x {
+    if ([x respondsToSelector:@selector(next)]) return [x next];
     return nil;
 }
 

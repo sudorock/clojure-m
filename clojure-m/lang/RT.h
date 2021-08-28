@@ -16,6 +16,13 @@
 
 
 @interface RT : NSObject
++ (id)second:(id)x;
 
-+(id <ISeq>)seq:(id)coll;
++ (id)third:(id)x;
+
++ (id)first:(id)x;
+
++ (id)next:(id)x;
+
++ (id <ISeq>)seq:(id)coll;
 @end

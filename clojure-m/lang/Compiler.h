@@ -20,6 +20,11 @@
 @end
 
 
+@protocol IParser
+- (id <Expr>)parse:(id)form;
+@end
+
+
 @interface NilExpr : NSObject <LiteralExpr>
 - (id)val;
 
@@ -51,7 +56,13 @@
 
 
 @interface VarExpr : NSObject <Expr>
-@property Var *var;
+- (id)eval;
+
+
+@end
+
+
+@interface DefExpr : NSObject <Expr>
 
 - (id)eval;
 
@@ -68,7 +79,14 @@
 @end
 
 
+@interface DefExprParser : NSObject <IParser>
+- (id <Expr>)parse:(id)form;
+@end
+
+
 @interface Compiler : NSObject
++ (id <IParser>)getSpecialFormParser:(id)op;
+
 + (id <Expr>)analyze:(id)form;
 
 + (id <Expr>)resolve:(Symbol *)sym;

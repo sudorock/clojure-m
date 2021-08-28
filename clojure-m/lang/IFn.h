@@ -3,6 +3,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "ISeq.h"
 
 
 @protocol IFn
