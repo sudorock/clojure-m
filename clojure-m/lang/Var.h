@@ -6,4 +6,9 @@
 
 
 @interface Var : NSObject
++ (id)name:(NSString *)name;
+
+- (instancetype)initWithName:(NSString *)name;
+
+- (void)bindRoot:(id)root;
 @end

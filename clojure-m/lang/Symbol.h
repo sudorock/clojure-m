@@ -6,9 +6,10 @@
 
 
 @interface Symbol : NSObject
-@property NSString *name;
 
 + (id)intern:(NSString *)name;
 
 - (instancetype)initWithName:(NSString *)name;
+
+- (NSString *)getName;
 @end

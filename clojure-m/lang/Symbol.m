@@ -5,17 +5,26 @@
 #import "Symbol.h"
 
 
-@implementation Symbol
+@implementation Symbol {
+    NSString *_name;
+}
 
 + (id)intern:(NSString *)name {
     return [[self alloc] initWithName:name];
 }
 
+
 - (instancetype)initWithName:(NSString *)name {
     self = [super init];
     if (!self) return nil;
 
-    self.name = name;
+    _name = name;
     return self;
 }
+
+
+- (NSString *)getName {
+    return _name;
+}
+
 @end

@@ -6,7 +6,7 @@
 
 int main() {
 //    char *source = "  (false 1.25 2 sunil 3 (9 10 false 5.))      ";
-    char *source = "  (false 1 3)      ";
+    char *source = "  (def a 3)      ";
 
     NSObject *k = [LispReader read:source];
 

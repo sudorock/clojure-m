@@ -82,7 +82,9 @@
 @end
 
 
-@implementation VarExpr
+@implementation VarExpr {
+    Var *_var;
+}
 
 + (id)var:(Var *)var {
     return [[self alloc] initWithVar:var];
@@ -91,7 +93,7 @@
 
 - (id)initWithVar:(Var *)var {
     self = [super init];
-    self.var = var;
+    _var = var;
     return self;
 }
 
@@ -151,7 +153,63 @@
 @end
 
 
+@implementation DefExpr {
+    Var *_var;
+    id <Expr> _expr;
+}
+
++ (id)var:(Var *)var expr:(id <Expr>)expr {
+    return [[self alloc] initWithVar:var expr:expr];
+}
+
+
+- (id)initWithVar:(Var *)var expr:(id <Expr>)expr {
+    self = [super init];
+    _var = var;
+    _expr = expr;
+    return self;
+}
+
+
+- (id)eval {
+    [_var bindRoot:[_expr eval]];
+    return _var;
+}
+
+
+@end
+
+
+@implementation DefExprParser
+- (id <Expr>)parse:(PersistentList *)form {
+    Symbol *sym = [RT second:form];
+
+    // TODO lookup var
+    Var *v = [Var name:[sym getName]];
+
+    return [DefExpr var:v expr:[Compiler analyze:[RT third:form]]];
+}
+
+@end
+
+
 @implementation Compiler
+
+static NSDictionary *specialFormParsers;
+
+
++ (id <IParser>)getSpecialFormParser:(Symbol *)op {
+    static dispatch_once_t onceToken;
+    // TODO Think of whether this should be done using Persistent hashmaps like the JVM
+    dispatch_once(&onceToken, ^{
+        specialFormParsers = @{
+                @"def": [[DefExprParser alloc] init]
+        };
+    });
+
+    return specialFormParsers[[op getName]];
+}
+
 
 + (id <Expr>)analyze:(id)form {
     if (form == [NSNull null]) return [[NilExpr alloc] init];
@@ -175,7 +233,13 @@
 }
 
 
-+ (id <Expr>)analyzeSeq:(id)form {
++ (id <Expr>)analyzeSeq:(PersistentList *)form {
+
+    id op = [form first];
+
+    id <IParser> p = [self getSpecialFormParser:op];
+    if (p != nil) return [p parse:form];
+
     return [InvokeExpr parse:form];
 }
 
